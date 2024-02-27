@@ -22,7 +22,7 @@ M.setup = function(options)
   vim.cmd("highlight default link ChatGPTSelectedMessage ColorColumn")
 
   config.setup(options)
-  api.setup()
+  --api.setup()
   signs.setup()
 end
 
