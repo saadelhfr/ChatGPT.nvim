@@ -7,7 +7,7 @@ local Api = {}
 Api.COMPLETIONS_URL = "https://0138-129-104-253-53.ngrok-free.app/v1/completions"
 Api.CHAT_COMPLETIONS_URL = "https://0138-129-104-253-53.ngrok-free.app/v1/chat/completions"
 Api.EDITS_URL = "https://0138-129-104-253-53.ngrok-free.app/v1/edits"
-
+Api.AUTHORIZATION_HEADER = "Authorizé a ba saaad"
 function Api.completions(custom_params, cb)
   local params = vim.tbl_extend("keep", custom_params, Config.options.openai_params)
   Api.make_call(Api.COMPLETIONS_URL, params, cb)
