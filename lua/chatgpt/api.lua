@@ -7,7 +7,6 @@ local Api = {}
 Api.COMPLETIONS_URL = "http://localhost:8080/v1/completions"
 Api.CHAT_COMPLETIONS_URL = "http://localhost:8080/v1/chat/completions"
 Api.EDITS_URL = "http://localhost:8080/v1/edits"
-Api.AUTHORIZATION_HEADER = "Authorization: Bearer your_access_token_here"
 
 function Api.completions(custom_params, cb)
   local params = vim.tbl_extend("keep", custom_params, Config.options.openai_params)
@@ -182,130 +181,130 @@ function Api.close()
     job:shutdown()
   end
 end
-
-local splitCommandIntoTable = function(command)
-  local cmd = {}
-  for word in command:gmatch("%S+") do
-    table.insert(cmd, word)
-  end
-  return cmd
-end
-
-local function loadConfigFromCommand(command, optionName, callback, defaultValue)
-  local cmd = splitCommandIntoTable(command)
-  job
-    :new({
-      command = cmd[1],
-      args = vim.list_slice(cmd, 2, #cmd),
-      on_exit = function(j, exit_code)
-        if exit_code ~= 0 then
-          logger.warn("Config '" .. optionName .. "' did not return a value when executed")
-          return
-        end
-        local value = j:result()[1]:gsub("%s+$", "")
-        if value ~= nil and value ~= "" then
-          callback(value)
-        elseif defaultValue ~= nil and defaultValue ~= "" then
-          callback(defaultValue)
-        end
-      end,
-    })
-    :start()
-end
-
-local function loadConfigFromEnv(envName, configName, callback)
-  local variable = os.getenv(envName)
-  if not variable then
-    return
-  end
-  local value = variable:gsub("%s+$", "")
-  Api[configName] = value
-  if callback then
-    callback(value)
-  end
-end
-
-local function loadApiHost(envName, configName, optionName, callback, defaultValue)
-  loadConfigFromEnv(envName, configName)
-  if Api[configName] then
-    callback(Api[configName])
-  else
-    if Config.options[optionName] ~= nil and Config.options[optionName] ~= "" then
-      loadConfigFromCommand(Config.options[optionName], optionName, callback, defaultValue)
-    else
-      callback(defaultValue)
-    end
-  end
-end
-
-local function loadApiKey(envName, configName, optionName, callback, defaultValue)
-  loadConfigFromEnv(envName, configName, callback)
-  if not Api[configName] then
-    if Config.options[optionName] ~= nil and Config.options[optionName] ~= "" then
-      loadConfigFromCommand(Config.options[optionName], optionName, callback, defaultValue)
-    else
-      logger.warn(envName .. " environment variable not set")
-      return
-    end
-  end
-end
-
-local function loadAzureConfigs()
-  loadApiKey("OPENAI_API_BASE", "OPENAI_API_BASE", "azure_api_base_cmd", function(value)
-    Api.OPENAI_API_BASE = value
-  end)
-  loadApiKey("OPENAI_API_AZURE_ENGINE", "OPENAI_API_AZURE_ENGINE", "azure_api_engine_cmd", function(value)
-    Api.OPENAI_API_AZURE_ENGINE = value
-  end)
-  loadApiHost("OPENAI_API_AZURE_VERSION", "OPENAI_API_AZURE_VERSION", "azure_api_version_cmd", function(value)
-    Api.OPENAI_API_AZURE_VERSION = value
-  end, "2023-05-15")
-
-  if Api["OPENAI_API_BASE"] and Api["OPENAI_API_AZURE_ENGINE"] then
-    Api.COMPLETIONS_URL = Api.OPENAI_API_BASE
-      .. "/openai/deployments/"
-      .. Api.OPENAI_API_AZURE_ENGINE
-      .. "/completions?api-version="
-      .. Api.OPENAI_API_AZURE_VERSION
-    Api.CHAT_COMPLETIONS_URL = Api.OPENAI_API_BASE
-      .. "/openai/deployments/"
-      .. Api.OPENAI_API_AZURE_ENGINE
-      .. "/chat/completions?api-version="
-      .. Api.OPENAI_API_AZURE_VERSION
-  end
-end
-
-local function startsWith(str, start)
-  return string.sub(str, 1, string.len(start)) == start
-end
-
-local function ensureUrlProtocol(str)
-  if startsWith(str, "https://") or startsWith(str, "http://") then
-    return str
-  end
-
-  return "https://" .. str
-end
-
-function Api.setup()
-  loadApiHost("OPENAI_API_HOST", "OPENAI_API_HOST", "api_host_cmd", function(value)
-    Api.OPENAI_API_HOST = value
-    Api.COMPLETIONS_URL = ensureUrlProtocol(Api.OPENAI_API_HOST .. "/v1/completions")
-    Api.CHAT_COMPLETIONS_URL = ensureUrlProtocol(Api.OPENAI_API_HOST .. "/v1/chat/completions")
-    Api.EDITS_URL = ensureUrlProtocol(Api.OPENAI_API_HOST .. "/v1/edits")
-  end, "api.openai.com")
-
-  loadApiKey("OPENAI_API_KEY", "OPENAI_API_KEY", "api_key_cmd", function(value)
-    Api.OPENAI_API_KEY = value
-    loadConfigFromEnv("OPENAI_API_TYPE", "OPENAI_API_TYPE")
-    if Api["OPENAI_API_TYPE"] == "azure" then
-      loadAzureConfigs()
-      Api.AUTHORIZATION_HEADER = "api-key: " .. Api.OPENAI_API_KEY
-    else
-      Api.AUTHORIZATION_HEADER = "Authorization: Bearer " .. Api.OPENAI_API_KEY
-    end
-  end)
-end
+--
+-- local splitCommandIntoTable = function(command)
+--   local cmd = {}
+--   for word in command:gmatch("%S+") do
+--     table.insert(cmd, word)
+--   end
+--   return cmd
+-- end
+--
+-- local function loadConfigFromCommand(command, optionName, callback, defaultValue)
+--   local cmd = splitCommandIntoTable(command)
+--   job
+--     :new({
+--       command = cmd[1],
+--       args = vim.list_slice(cmd, 2, #cmd),
+--       on_exit = function(j, exit_code)
+--         if exit_code ~= 0 then
+--           logger.warn("Config '" .. optionName .. "' did not return a value when executed")
+--           return
+--         end
+--         local value = j:result()[1]:gsub("%s+$", "")
+--         if value ~= nil and value ~= "" then
+--           callback(value)
+--         elseif defaultValue ~= nil and defaultValue ~= "" then
+--           callback(defaultValue)
+--         end
+--       end,
+--     })
+--     :start()
+-- end
+--
+-- local function loadConfigFromEnv(envName, configName, callback)
+--   local variable = os.getenv(envName)
+--   if not variable then
+--     return
+--   end
+--   local value = variable:gsub("%s+$", "")
+--   Api[configName] = value
+--   if callback then
+--     callback(value)
+--   end
+-- end
+--
+-- local function loadApiHost(envName, configName, optionName, callback, defaultValue)
+--   loadConfigFromEnv(envName, configName)
+--   if Api[configName] then
+--     callback(Api[configName])
+--   else
+--     if Config.options[optionName] ~= nil and Config.options[optionName] ~= "" then
+--       loadConfigFromCommand(Config.options[optionName], optionName, callback, defaultValue)
+--     else
+--       callback(defaultValue)
+--     end
+--   end
+-- end
+--
+-- local function loadApiKey(envName, configName, optionName, callback, defaultValue)
+--   loadConfigFromEnv(envName, configName, callback)
+--   if not Api[configName] then
+--     if Config.options[optionName] ~= nil and Config.options[optionName] ~= "" then
+--       loadConfigFromCommand(Config.options[optionName], optionName, callback, defaultValue)
+--     else
+--       logger.warn(envName .. " environment variable not set")
+--       return
+--     end
+--   end
+-- end
+--
+-- local function loadAzureConfigs()
+--   loadApiKey("OPENAI_API_BASE", "OPENAI_API_BASE", "azure_api_base_cmd", function(value)
+--     Api.OPENAI_API_BASE = value
+--   end)
+--   loadApiKey("OPENAI_API_AZURE_ENGINE", "OPENAI_API_AZURE_ENGINE", "azure_api_engine_cmd", function(value)
+--     Api.OPENAI_API_AZURE_ENGINE = value
+--   end)
+--   loadApiHost("OPENAI_API_AZURE_VERSION", "OPENAI_API_AZURE_VERSION", "azure_api_version_cmd", function(value)
+--     Api.OPENAI_API_AZURE_VERSION = value
+--   end, "2023-05-15")
+--
+--   if Api["OPENAI_API_BASE"] and Api["OPENAI_API_AZURE_ENGINE"] then
+--     Api.COMPLETIONS_URL = Api.OPENAI_API_BASE
+--       .. "/openai/deployments/"
+--       .. Api.OPENAI_API_AZURE_ENGINE
+--       .. "/completions?api-version="
+--       .. Api.OPENAI_API_AZURE_VERSION
+--     Api.CHAT_COMPLETIONS_URL = Api.OPENAI_API_BASE
+--       .. "/openai/deployments/"
+--       .. Api.OPENAI_API_AZURE_ENGINE
+--       .. "/chat/completions?api-version="
+--       .. Api.OPENAI_API_AZURE_VERSION
+--   end
+-- end
+--
+-- local function startsWith(str, start)
+--   return string.sub(str, 1, string.len(start)) == start
+-- end
+--
+-- local function ensureUrlProtocol(str)
+--   if startsWith(str, "https://") or startsWith(str, "http://") then
+--     return str
+--   end
+--
+--   return "https://" .. str
+-- end
+--
+-- function Api.setup()
+--   loadApiHost("OPENAI_API_HOST", "OPENAI_API_HOST", "api_host_cmd", function(value)
+--     Api.OPENAI_API_HOST = value
+--     Api.COMPLETIONS_URL = ensureUrlProtocol(Api.OPENAI_API_HOST .. "/v1/completions")
+--     Api.CHAT_COMPLETIONS_URL = ensureUrlProtocol(Api.OPENAI_API_HOST .. "/v1/chat/completions")
+--     Api.EDITS_URL = ensureUrlProtocol(Api.OPENAI_API_HOST .. "/v1/edits")
+--   end, "api.openai.com")
+--
+--   loadApiKey("OPENAI_API_KEY", "OPENAI_API_KEY", "api_key_cmd", function(value)
+--     Api.OPENAI_API_KEY = value
+--     loadConfigFromEnv("OPENAI_API_TYPE", "OPENAI_API_TYPE")
+--     if Api["OPENAI_API_TYPE"] == "azure" then
+--       loadAzureConfigs()
+--       Api.AUTHORIZATION_HEADER = "api-key: " .. Api.OPENAI_API_KEY
+--     else
+--       Api.AUTHORIZATION_HEADER = "Authorization: Bearer " .. Api.OPENAI_API_KEY
+--     end
+--   end)
+-- end
 
 function Api.exec(cmd, args, on_stdout_chunk, on_complete, should_stop, on_stop)
   local stdout = vim.loop.new_pipe()
