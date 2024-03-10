@@ -7,9 +7,9 @@ local Api = {}
 --Api.COMPLETIONS_URL = "https://supreme-composed-racer.ngrok-free.app/v1/completions"
 --Api.CHAT_COMPLETIONS_URL = "https://supreme-composed-racer.ngrok-free.app/v1/chat/completions"
 --Api.EDITS_URL = "https://supreme-composed-racer.ngrok-free.app/v1/edits"
-Api.COMPLETIONS_URL = "https://ffc2-129-104-252-51.ngrok-free.app/"
-Api.CHAT_COMPLETIONS_URL = "https://ffc2-129-104-252-51.ngrok-free.app/"
-Api.EDITS_URL = "https://ffc2-129-104-252-51.ngrok-free.app/"
+Api.COMPLETIONS_URL = "https://7dc0-129-104-252-51.ngrok-free.app/v1/completions"
+Api.CHAT_COMPLETIONS_URL = "https://7dc0-129-104-252-51.ngrok-free.app/v1/chat/completions"
+Api.EDITS_URL = "https://7dc0-129-104-252-51.ngrok-free.app/v1/edits"
 Api.AUTHORIZATION_HEADER = "Authorizé a ba saaad"
 function Api.completions(custom_params, cb)
   local params = vim.tbl_extend("keep", custom_params, Config.options.openai_params)
